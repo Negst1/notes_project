@@ -1,0 +1,7 @@
+.env
+.env.local
+*.env
+
+postgres_data/
+notes_data/
+pgadmin_data/
