@@ -65,5 +65,5 @@ func main() {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 
-	log.Println("Server stopped")
+	log.Println("✅ Server stopped")
 }

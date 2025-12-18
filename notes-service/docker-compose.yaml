@@ -3,28 +3,28 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: idm-postgres
+    container_name: notes-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: idm
+      POSTGRES_DB: notes
     ports:
-      - "5432:5432"
+      - "5434:5432"  # ИЗМЕНИЛ: 5434 вместо 6432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - notes_postgres_data:/var/lib/postgresql/data  # ИЗМЕНИЛ: уникальное имя
       - ./migrations:/docker-entrypoint-initdb.d/
-    healthcheck: #delete
+    healthcheck:  # ДОБАВИЛ
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 10s
     networks:
-      - idm-network
+      - app-network  # ИЗМЕНИЛ: общая сеть
 
   app:
     build: .
-    container_name: idm-app
+    container_name: notes-app
     depends_on:
       postgres:
         condition: service_healthy
@@ -33,32 +33,21 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: password
-      DB_NAME: idm
+      DB_NAME: notes
       APP_PORT: 8080
+      IDM_SERVICE_URL: http://idm-app:8080  # Добавил для связи
     ports:
-      - "8080:8080"
+      - "8082:8080"  # ИЗМЕНИЛ: 8082 вместо 6060
     volumes:
       - ./logs:/root/logs 
     networks:
-      - idm-network
+      - app-network  # ИЗМЕНИЛ: общая сеть
     restart: unless-stopped
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: idm-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@idm.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - idm-network
-
 volumes:
-  postgres_data:
+  notes_postgres_data:  # ИЗМЕНИЛ: уникальное имя
 
 networks:
-  idm-network:
-    driver: bridge
+  app-network:  # ИЗМЕНИЛ: внешняя сеть
+    external: true
+    name: app-network

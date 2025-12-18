@@ -12,6 +12,7 @@ type UserRepository interface {
 	GetAll(ctx context.Context) ([]models.User, error)
 	Update(ctx context.Context, id int, user *models.User) error
 	Delete(ctx context.Context, id int) error
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 }
 
 type userRepository struct {
@@ -144,4 +145,23 @@ func (r *userRepository) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	query := `SELECT id, username, last_name, created_at, updated_at
+			FROM users 
+			WHERE email=$1`
+	var user models.User
+	err := r.db.QueryRowContext(ctx, query).Scan(
+		&user.ID,
+		&user.Username,
+		&user.LastName,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

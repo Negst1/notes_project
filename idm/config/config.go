@@ -29,7 +29,6 @@ func LoadConfig() Config {
 	}
 }
 
-// Инициализация БД
 func InitDB(cfg Config) (*sql.DB, error) {
 	connStr := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",

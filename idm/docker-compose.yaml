@@ -9,9 +9,9 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: idm
     ports:
-      - "5432:5432"
+      - "5433:5432" 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - idm_postgres_data:/var/lib/postgresql/data  
       - ./migrations:/docker-entrypoint-initdb.d/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -20,7 +20,7 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - idm-network
+      - app-network 
 
   app:
     build: .
@@ -35,12 +35,13 @@ services:
       DB_PASSWORD: password
       DB_NAME: idm
       APP_PORT: 8080
+      NOTES_SERVICE_URL: http://notes-app:8080 
     ports:
-      - "8080:8080"
+      - "8081:8080"
     volumes:
       - ./logs:/root/logs 
     networks:
-      - idm-network
+      - app-network
     restart: unless-stopped
 
   pgadmin:
@@ -54,11 +55,12 @@ services:
     depends_on:
       - postgres
     networks:
-      - idm-network
+      - app-network  # ИЗМЕНИЛ: общая сеть
 
 volumes:
-  postgres_data:
+  idm_postgres_data:  # ИЗМЕНИЛ: уникальное имя
 
 networks:
-  idm-network:
-    driver: bridge
+  app-network:  # ИЗМЕНИЛ: внешняя сеть для обоих сервисов
+    external: true
+    name: app-network
